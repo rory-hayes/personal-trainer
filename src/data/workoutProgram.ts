@@ -57,36 +57,19 @@ export const workoutProgram: WorkoutDay[] = [
         muscleGroups: ['triceps']
       },
       {
-        id: 'lying-leg-raises-mon',
-        name: 'Lying Leg Raises',
-        sets: 3,
-        reps: '15',
+        id: 'abs-mon',
+        name: 'Abs',
+        sets: 1,
+        reps: 'See below',
         category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'reverse-crunches-mon',
-        name: 'Reverse Crunches',
-        sets: 3,
-        reps: '15',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'plank-hold-mon',
-        name: 'Plank Hold',
-        sets: 3,
-        reps: '1 minute',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'toe-touches-mon',
-        name: 'Toe Touches (Optional)',
-        sets: 2,
-        reps: '20',
-        category: 'abs',
-        muscleGroups: ['abs']
+        muscleGroups: ['abs'],
+        subExercises: [
+          { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+          { name: 'Reverse Crunches', sets: 3, reps: '15' },
+          { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+          { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+          { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+        ]
       }
     ]
   },
@@ -146,36 +129,19 @@ export const workoutProgram: WorkoutDay[] = [
         muscleGroups: ['biceps']
       },
       {
-        id: 'lying-leg-raises-tue',
-        name: 'Lying Leg Raises',
-        sets: 3,
-        reps: '15',
+        id: 'abs-tue',
+        name: 'Abs',
+        sets: 1,
+        reps: 'See below',
         category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'reverse-crunches-tue',
-        name: 'Reverse Crunches',
-        sets: 3,
-        reps: '15',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'plank-hold-tue',
-        name: 'Plank Hold',
-        sets: 3,
-        reps: '1 minute',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'bicycle-crunches-tue',
-        name: 'Bicycle Crunches (Optional)',
-        sets: 2,
-        reps: '20',
-        category: 'abs',
-        muscleGroups: ['abs']
+        muscleGroups: ['abs'],
+        subExercises: [
+          { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+          { name: 'Reverse Crunches', sets: 3, reps: '15' },
+          { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+          { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+          { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+        ]
       }
     ]
   },
@@ -235,36 +201,19 @@ export const workoutProgram: WorkoutDay[] = [
         muscleGroups: ['calves']
       },
       {
-        id: 'lying-leg-raises-wed',
-        name: 'Lying Leg Raises',
-        sets: 3,
-        reps: '15',
+        id: 'abs-wed',
+        name: 'Abs',
+        sets: 1,
+        reps: 'See below',
         category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'reverse-crunches-wed',
-        name: 'Reverse Crunches',
-        sets: 3,
-        reps: '15',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'plank-hold-wed',
-        name: 'Plank Hold',
-        sets: 3,
-        reps: '1 minute',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'toe-touches-wed',
-        name: 'Toe Touches (Optional)',
-        sets: 2,
-        reps: '20',
-        category: 'abs',
-        muscleGroups: ['abs']
+        muscleGroups: ['abs'],
+        subExercises: [
+          { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+          { name: 'Reverse Crunches', sets: 3, reps: '15' },
+          { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+          { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+          { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+        ]
       }
     ]
   },
@@ -324,36 +273,19 @@ export const workoutProgram: WorkoutDay[] = [
         muscleGroups: ['triceps', 'chest']
       },
       {
-        id: 'lying-leg-raises-thu',
-        name: 'Lying Leg Raises',
-        sets: 3,
-        reps: '15',
+        id: 'abs-thu',
+        name: 'Abs',
+        sets: 1,
+        reps: 'See below',
         category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'reverse-crunches-thu',
-        name: 'Reverse Crunches',
-        sets: 3,
-        reps: '15',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'plank-hold-thu',
-        name: 'Plank Hold',
-        sets: 3,
-        reps: '1 minute',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'bicycle-crunches-thu',
-        name: 'Bicycle Crunches (Optional)',
-        sets: 2,
-        reps: '20',
-        category: 'abs',
-        muscleGroups: ['abs']
+        muscleGroups: ['abs'],
+        subExercises: [
+          { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+          { name: 'Reverse Crunches', sets: 3, reps: '15' },
+          { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+          { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+          { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+        ]
       }
     ]
   },
@@ -413,36 +345,19 @@ export const workoutProgram: WorkoutDay[] = [
         muscleGroups: ['biceps']
       },
       {
-        id: 'lying-leg-raises-fri',
-        name: 'Lying Leg Raises',
-        sets: 3,
-        reps: '15',
+        id: 'abs-fri',
+        name: 'Abs',
+        sets: 1,
+        reps: 'See below',
         category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'reverse-crunches-fri',
-        name: 'Reverse Crunches',
-        sets: 3,
-        reps: '15',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'plank-hold-fri',
-        name: 'Plank Hold',
-        sets: 3,
-        reps: '1 minute',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'toe-touches-fri',
-        name: 'Toe Touches (Optional)',
-        sets: 2,
-        reps: '20',
-        category: 'abs',
-        muscleGroups: ['abs']
+        muscleGroups: ['abs'],
+        subExercises: [
+          { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+          { name: 'Reverse Crunches', sets: 3, reps: '15' },
+          { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+          { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+          { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+        ]
       }
     ]
   },
@@ -494,36 +409,19 @@ export const workoutProgram: WorkoutDay[] = [
         muscleGroups: ['calves']
       },
       {
-        id: 'lying-leg-raises-sat',
-        name: 'Lying Leg Raises',
-        sets: 3,
-        reps: '15',
+        id: 'abs-sat',
+        name: 'Abs',
+        sets: 1,
+        reps: 'See below',
         category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'reverse-crunches-sat',
-        name: 'Reverse Crunches',
-        sets: 3,
-        reps: '15',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'plank-hold-sat',
-        name: 'Plank Hold',
-        sets: 3,
-        reps: '1 minute',
-        category: 'abs',
-        muscleGroups: ['abs']
-      },
-      {
-        id: 'bicycle-crunches-sat',
-        name: 'Bicycle Crunches (Optional)',
-        sets: 2,
-        reps: '20',
-        category: 'abs',
-        muscleGroups: ['abs']
+        muscleGroups: ['abs'],
+        subExercises: [
+          { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+          { name: 'Reverse Crunches', sets: 3, reps: '15' },
+          { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+          { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+          { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+        ]
       }
     ]
   }
@@ -537,28 +435,19 @@ export const recoveryDay = {
   finisher: '10-min leg raises + abs + Full-body mobility',
   exercises: [
     {
-      id: 'lying-leg-raises-sun',
-      name: 'Lying Leg Raises',
-      sets: 3,
-      reps: '15',
+      id: 'abs-sun',
+      name: 'Abs',
+      sets: 1,
+      reps: 'See below',
       category: 'abs',
-      muscleGroups: ['abs']
-    },
-    {
-      id: 'reverse-crunches-sun',
-      name: 'Reverse Crunches',
-      sets: 3,
-      reps: '15',
-      category: 'abs',
-      muscleGroups: ['abs']
-    },
-    {
-      id: 'plank-hold-sun',
-      name: 'Plank Hold',
-      sets: 3,
-      reps: '1 minute',
-      category: 'abs',
-      muscleGroups: ['abs']
+      muscleGroups: ['abs'],
+      subExercises: [
+        { name: 'Lying Leg Raises', sets: 3, reps: '15' },
+        { name: 'Reverse Crunches', sets: 3, reps: '15' },
+        { name: 'Plank Hold', sets: 3, reps: '1 minute' },
+        { name: 'Toe Touches (Optional)', sets: 2, reps: '20' },
+        { name: 'Hanging Leg Raises', sets: 3, reps: '10' }
+      ]
     }
   ]
 };

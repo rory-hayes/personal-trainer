@@ -10,13 +10,56 @@ interface ExerciseTrackerProps {
   workoutDay: string;
 }
 
-export function ExerciseTracker({ 
-  exercise, 
-  exerciseIndex, 
-  onComplete, 
+export function ExerciseTracker({
+  exercise,
+  exerciseIndex,
+  onComplete,
   isCompleted,
-  workoutDay 
+  workoutDay
 }: ExerciseTrackerProps) {
+  if (exercise.subExercises && exercise.subExercises.length > 0) {
+    return (
+      <div className="p-4 space-y-6">
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-gray-900 leading-tight">{exercise.name}</h2>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {exercise.muscleGroups.map(muscle => (
+                <span
+                  key={muscle}
+                  className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full capitalize font-medium"
+                >
+                  {muscle}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <ul className="list-disc pl-5 space-y-1 text-gray-700">
+            {exercise.subExercises.map(sub => (
+              <li key={sub.name} className="text-sm">
+                {sub.name} - {sub.sets} × {sub.reps}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {!isCompleted ? (
+          <button
+            onClick={() => onComplete(exerciseIndex)}
+            className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold text-lg transition-all duration-200 active:scale-95"
+          >
+            Complete Exercise
+          </button>
+        ) : (
+          <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 text-center">
+            <div className="text-green-700 font-bold text-xl mb-3">🎉 Exercise Complete!</div>
+            <div className="text-base text-green-600 font-medium">Great job! Moving to the next exercise...</div>
+          </div>
+        )}
+      </div>
+    );
+  }
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [restTimer, setRestTimer] = useState(0);

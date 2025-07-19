@@ -5,6 +5,11 @@ export interface Exercise {
   reps: string; // e.g., "6-8", "12-15"
   category: 'compound' | 'isolation' | 'cardio' | 'abs';
   muscleGroups: string[];
+  subExercises?: {
+    name: string;
+    sets: number;
+    reps: string;
+  }[];
 }
 
 export interface WorkoutSet {
