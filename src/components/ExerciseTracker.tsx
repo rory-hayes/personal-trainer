@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Minus, Check, RotateCcw, Timer, TrendingUp, Bot, Zap, Target } from 'lucide-react';
 import { Exercise, WorkoutSet } from '../types/workout';
+import { useWorkoutData } from '../hooks/useWorkoutData';
 
 interface ExerciseTrackerProps {
   exercise: Exercise;
@@ -8,6 +9,7 @@ interface ExerciseTrackerProps {
   onComplete: (exerciseIndex: number) => void;
   isCompleted: boolean;
   workoutDay: string;
+  workoutSessionId: string | null;
 }
 
 export function ExerciseTracker({
@@ -16,7 +18,10 @@ export function ExerciseTracker({
   onComplete,
   isCompleted,
   workoutDay
+  workoutSessionId
 }: ExerciseTrackerProps) {
+  const { saveExerciseSet, getWorkoutExerciseId } = useWorkoutData();
+
   if (exercise.subExercises && exercise.subExercises.length > 0) {
     return (
       <div className="p-4 space-y-6">
@@ -68,6 +73,8 @@ export function ExerciseTracker({
   const [showAISuggestion, setShowAISuggestion] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<string>('');
 
+  const [workoutExerciseId, setWorkoutExerciseId] = useState<string | null>(null);
+
   // Initialize sets when exercise changes
   useEffect(() => {
     const initialSets: WorkoutSet[] = Array.from({ length: exercise.sets }, (_, i) => ({
@@ -80,6 +87,22 @@ export function ExerciseTracker({
     setSets(initialSets);
     setCurrentSetIndex(0);
   }, [exercise.id, exercise.sets, lastWeight]);
+
+  // Get workout exercise ID when component mounts
+  useEffect(() => {
+    const fetchWorkoutExerciseId = async () => {
+      if (workoutSessionId) {
+        try {
+          const id = await getWorkoutExerciseId(workoutSessionId, exercise.name);
+          setWorkoutExerciseId(id);
+        } catch (error) {
+          console.error('Failed to get workout exercise ID:', error);
+        }
+      }
+    };
+    
+    fetchWorkoutExerciseId();
+  }, [workoutSessionId, exercise.name]);
 
   // Generate AI suggestions based on performance
   useEffect(() => {
@@ -124,7 +147,25 @@ export function ExerciseTracker({
     ));
   };
 
-  const completeSet = (setIndex: number) => {
+  const completeSet = async (setIndex: number) => {
+    const currentSet = sets[setIndex];
+    
+    // Save to database if we have the workout exercise ID
+    if (workoutExerciseId && currentSet.weight > 0 && currentSet.reps > 0) {
+      try {
+        await saveExerciseSet({
+          workout_exercise_id: workoutExerciseId,
+          set_number: setIndex + 1,
+          weight_kg: currentSet.weight,
+          reps: currentSet.reps,
+          completed: true,
+        });
+      } catch (error) {
+        console.error('Failed to save exercise set:', error);
+        // Continue with local tracking even if database fails
+      }
+    }
+    
     setSets(prev => prev.map((set, index) => 
       index === setIndex ? { ...set, completed: true } : set
     ));
@@ -310,63 +351,20 @@ export function ExerciseTracker({
                     <label className="block text-base font-bold text-gray-700 mb-3">
                       Weight (kg)
                     </label>
-                    <div className="flex items-center gap-2 justify-center">
-                      {/* Quick decrease buttons */}
-                      <button
-                        onClick={() => quickWeightAdjust(index, -10)}
-                        className="w-12 h-12 bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded-xl flex items-center justify-center transition-colors font-bold text-sm active:scale-95"
-                      >
-                        -10
-                      </button>
-                      <button
-                        onClick={() => quickWeightAdjust(index, -2.5)}
-                        className="w-12 h-12 bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded-xl flex items-center justify-center transition-colors font-bold text-sm active:scale-95"
-                      >
-                        -2.5
-                      </button>
-                      
-                      {/* Weight display and manual control */}
-                      <div className="flex items-center border-2 border-gray-300 rounded-xl mx-2">
-                        <button
-                          onClick={() => updateSet(index, 'weight', Math.max(0, set.weight - 1))}
-                          className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all"
-                        >
-                          <Minus className="w-5 h-5" />
-                        </button>
+                    <div className="flex justify-center">
+                      <div className="w-32">
                         <input
                           type="number"
-                          value={set.weight}
+                          value={set.weight || ''}
                           onChange={(e) => updateSet(index, 'weight', parseFloat(e.target.value) || 0)}
-                          className="w-20 h-12 text-center border-0 focus:ring-0 font-mono text-xl font-bold"
+                          placeholder="0"
+                          className="w-full h-16 text-center border-2 border-gray-300 rounded-xl font-mono text-2xl font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
                           step="0.5"
+                          min="0"
+                          inputMode="decimal"
                         />
-                        <button
-                          onClick={() => updateSet(index, 'weight', set.weight + 1)}
-                          className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all"
-                        >
-                          <Plus className="w-5 h-5" />
-                        </button>
+                        <div className="text-center text-sm text-gray-500 mt-1">kg</div>
                       </div>
-
-                      {/* Quick increase buttons */}
-                      <button
-                        onClick={() => quickWeightAdjust(index, 2.5)}
-                        className="w-12 h-12 bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700 rounded-xl flex items-center justify-center transition-colors font-bold text-sm active:scale-95"
-                      >
-                        +2.5
-                      </button>
-                      <button
-                        onClick={() => quickWeightAdjust(index, 5)}
-                        className="w-12 h-12 bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700 rounded-xl flex items-center justify-center transition-colors font-bold text-sm active:scale-95"
-                      >
-                        +5
-                      </button>
-                      <button
-                        onClick={() => quickWeightAdjust(index, 10)}
-                        className="w-12 h-12 bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700 rounded-xl flex items-center justify-center transition-colors font-bold text-sm active:scale-95"
-                      >
-                        +10
-                      </button>
                     </div>
                   </div>
 

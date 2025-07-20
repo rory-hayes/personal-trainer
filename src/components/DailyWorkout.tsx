@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Play, Pause, RotateCcw, Target, Trophy, Bot, TrendingUp, Zap } from 'lucide-react';
 import { WorkoutDay } from '../types/workout';
 import { ExerciseTracker } from './ExerciseTracker';
+import { useWorkoutData } from '../hooks/useWorkoutData';
 
 interface DailyWorkoutProps {
   workout: WorkoutDay;
@@ -16,6 +17,9 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
   const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
   const [workoutSummary, setWorkoutSummary] = useState<string>('');
   const [showSummary, setShowSummary] = useState(false);
+
+  const { createWorkoutSession, completeWorkoutSession } = useWorkoutData();
+  const [currentWorkoutSessionId, setCurrentWorkoutSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     let interval: number | null = null;
@@ -48,23 +52,46 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
     setWorkoutSummary(summaries[Math.floor(Math.random() * summaries.length)]);
     setShowSummary(true);
   };
-  const startWorkout = () => {
+  
+  const startWorkout = async () => {
     if (!startTime) {
       setStartTime(new Date());
+      
+      // Create workout session in database
+      try {
+        const sessionData = {
+          workout_day: workout.day,
+          workout_title: workout.title,
+          workout_color: workout.color,
+          exercises: workout.exercises.map((exercise, index) => ({
+            exercise_name: exercise.name,
+            planned_sets: exercise.sets,
+            planned_reps: exercise.reps,
+            exercise_order: index + 1,
+          }))
+        };
+        
+        const session = await createWorkoutSession(sessionData);
+        setCurrentWorkoutSessionId(session.id);
+      } catch (error) {
+        console.error('Failed to create workout session:', error);
+        // Continue with local tracking even if database fails
+      }
     }
     setIsActive(true);
   };
 
-  const pauseWorkout = () => {
+  const pauseWorkout = async () => {
     setIsActive(false);
   };
 
-  const resetWorkout = () => {
+  const resetWorkout = async () => {
     setIsActive(false);
     setStartTime(null);
     setElapsedTime(0);
     setCurrentExerciseIndex(0);
     setCompletedExercises(new Set());
+    setCurrentWorkoutSessionId(null);
   };
 
   const formatTime = (seconds: number) => {
@@ -76,9 +103,25 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
   const handleExerciseComplete = (exerciseIndex: number) => {
     setCompletedExercises(prev => new Set([...prev, exerciseIndex]));
     
+    // If all exercises are completed, save workout to database
+    if (exerciseIndex === workout.exercises.length - 1) {
+      handleWorkoutComplete();
+    }
+    
     // Auto-advance to next exercise
     if (exerciseIndex < workout.exercises.length - 1) {
       setCurrentExerciseIndex(exerciseIndex + 1);
+    }
+  };
+
+  const handleWorkoutComplete = async () => {
+    if (currentWorkoutSessionId && startTime) {
+      try {
+        const durationMinutes = Math.floor(elapsedTime / 60);
+        await completeWorkoutSession(currentWorkoutSessionId, durationMinutes);
+      } catch (error) {
+        console.error('Failed to complete workout session:', error);
+      }
     }
   };
 
@@ -199,6 +242,7 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
             onComplete={handleExerciseComplete}
             isCompleted={completedExercises.has(currentExerciseIndex)}
             workoutDay={workout.day}
+            workoutSessionId={currentWorkoutSessionId}
           />
         )}
       </div>

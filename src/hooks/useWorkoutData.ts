@@ -251,6 +251,24 @@ export function useWorkoutData() {
     }
   };
 
+  // Get workout exercise ID by session and exercise name
+  const getWorkoutExerciseId = async (workoutSessionId: string, exerciseName: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('workout_exercises')
+        .select('id')
+        .eq('workout_session_id', workoutSessionId)
+        .eq('exercises.name', exerciseName)
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    }
+  };
+
   return {
     loading,
     error,
@@ -260,5 +278,6 @@ export function useWorkoutData() {
     getWorkoutHistory,
     getExerciseProgress,
     getPersonalRecords,
+    getWorkoutExerciseId,
   };
 }
