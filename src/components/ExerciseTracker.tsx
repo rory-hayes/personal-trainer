@@ -22,6 +22,86 @@ export function ExerciseTracker({
 }: ExerciseTrackerProps) {
   const { saveExerciseSet, getWorkoutExerciseId } = useWorkoutData();
 
+  // All hooks must be called before any conditional logic
+  const [sets, setSets] = useState<WorkoutSet[]>([]);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [restTimer, setRestTimer] = useState(0);
+  const [isResting, setIsResting] = useState(false);
+  const [lastWeight, setLastWeight] = useState(0);
+  const [showAISuggestion, setShowAISuggestion] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<string>('');
+  const [workoutExerciseId, setWorkoutExerciseId] = useState<string | null>(null);
+
+  // Initialize sets when exercise changes
+  useEffect(() => {
+    if (!exercise.subExercises || exercise.subExercises.length === 0) {
+      const initialSets: WorkoutSet[] = Array.from({ length: exercise.sets }, (_, i) => ({
+        id: `${exercise.id}-set-${i + 1}`,
+        exercise_id: exercise.id,
+        weight: lastWeight,
+        reps: 0,
+        completed: false
+      }));
+      setSets(initialSets);
+      setCurrentSetIndex(0);
+    }
+  }, [exercise.id, exercise.sets, lastWeight, exercise.subExercises]);
+
+  // Get workout exercise ID when component mounts
+  useEffect(() => {
+    const fetchWorkoutExerciseId = async () => {
+      if (workoutSessionId && (!exercise.subExercises || exercise.subExercises.length === 0)) {
+        try {
+          const id = await getWorkoutExerciseId(workoutSessionId, exercise.name);
+          setWorkoutExerciseId(id);
+        } catch (error) {
+          console.error('Failed to get workout exercise ID:', error);
+        }
+      }
+    };
+    
+    fetchWorkoutExerciseId();
+  }, [workoutSessionId, exercise.name, exercise.subExercises]);
+
+  // Generate AI suggestions based on performance
+  useEffect(() => {
+    if (exercise.subExercises && exercise.subExercises.length > 0) return;
+    
+    const completedSets = sets.filter(set => set.completed);
+    if (completedSets.length >= 2) {
+      const avgReps = completedSets.reduce((sum, set) => sum + set.reps, 0) / completedSets.length;
+      const targetRepsRange = getTargetReps();
+      const maxTarget = targetRepsRange.length === 2 ? targetRepsRange[1] : targetRepsRange[0];
+      
+      if (avgReps >= maxTarget && !showAISuggestion) {
+        setAiSuggestion(`Great form! You're hitting the upper rep range consistently. Consider increasing weight by 2.5-5kg next session.`);
+        setShowAISuggestion(true);
+      } else if (avgReps < targetRepsRange[0] && !showAISuggestion) {
+        setAiSuggestion(`Focus on form over weight. Consider reducing weight by 2.5kg to hit the target rep range.`);
+        setShowAISuggestion(true);
+      }
+    }
+  }, [sets, showAISuggestion, exercise.subExercises]);
+
+  // Rest timer effect
+  useEffect(() => {
+    let interval: number | null = null;
+    if (isResting && restTimer > 0) {
+      interval = setInterval(() => {
+        setRestTimer(prev => {
+          if (prev <= 1) {
+            setIsResting(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isResting, restTimer]);
+
   if (exercise.subExercises && exercise.subExercises.length > 0) {
     return (
       <div className="p-4 space-y-6">
@@ -65,81 +145,6 @@ export function ExerciseTracker({
       </div>
     );
   }
-  const [sets, setSets] = useState<WorkoutSet[]>([]);
-  const [currentSetIndex, setCurrentSetIndex] = useState(0);
-  const [restTimer, setRestTimer] = useState(0);
-  const [isResting, setIsResting] = useState(false);
-  const [lastWeight, setLastWeight] = useState(0);
-  const [showAISuggestion, setShowAISuggestion] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState<string>('');
-
-  const [workoutExerciseId, setWorkoutExerciseId] = useState<string | null>(null);
-
-  // Initialize sets when exercise changes
-  useEffect(() => {
-    const initialSets: WorkoutSet[] = Array.from({ length: exercise.sets }, (_, i) => ({
-      id: `${exercise.id}-set-${i + 1}`,
-      exercise_id: exercise.id,
-      weight: lastWeight,
-      reps: 0,
-      completed: false
-    }));
-    setSets(initialSets);
-    setCurrentSetIndex(0);
-  }, [exercise.id, exercise.sets, lastWeight]);
-
-  // Get workout exercise ID when component mounts
-  useEffect(() => {
-    const fetchWorkoutExerciseId = async () => {
-      if (workoutSessionId) {
-        try {
-          const id = await getWorkoutExerciseId(workoutSessionId, exercise.name);
-          setWorkoutExerciseId(id);
-        } catch (error) {
-          console.error('Failed to get workout exercise ID:', error);
-        }
-      }
-    };
-    
-    fetchWorkoutExerciseId();
-  }, [workoutSessionId, exercise.name]);
-
-  // Generate AI suggestions based on performance
-  useEffect(() => {
-    const completedSets = sets.filter(set => set.completed);
-    if (completedSets.length >= 2) {
-      const avgReps = completedSets.reduce((sum, set) => sum + set.reps, 0) / completedSets.length;
-      const targetRepsRange = getTargetReps();
-      const maxTarget = targetRepsRange.length === 2 ? targetRepsRange[1] : targetRepsRange[0];
-      
-      if (avgReps >= maxTarget && !showAISuggestion) {
-        setAiSuggestion(`Great form! You're hitting the upper rep range consistently. Consider increasing weight by 2.5-5kg next session.`);
-        setShowAISuggestion(true);
-      } else if (avgReps < targetRepsRange[0] && !showAISuggestion) {
-        setAiSuggestion(`Focus on form over weight. Consider reducing weight by 2.5kg to hit the target rep range.`);
-        setShowAISuggestion(true);
-      }
-    }
-  }, [sets]);
-
-  // Rest timer effect
-  useEffect(() => {
-    let interval: number | null = null;
-    if (isResting && restTimer > 0) {
-      interval = setInterval(() => {
-        setRestTimer(prev => {
-          if (prev <= 1) {
-            setIsResting(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isResting, restTimer]);
 
   const updateSet = (setIndex: number, field: 'weight' | 'reps', value: number) => {
     setSets(prev => prev.map((set, index) => 
