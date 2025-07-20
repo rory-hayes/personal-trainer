@@ -35,6 +35,11 @@ export function useWorkoutData() {
     setError(null);
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured. Workout will only be tracked locally.');
+        return { id: `local-${Date.now()}`, user_id: 'local-user', ...workoutData };
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -100,6 +105,11 @@ export function useWorkoutData() {
     setError(null);
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured. Set data will only be tracked locally.');
+        return { id: `local-set-${Date.now()}`, ...setData };
+      }
+
       const { data, error } = await supabase
         .from('exercise_sets')
         .upsert({
@@ -129,6 +139,11 @@ export function useWorkoutData() {
     setError(null);
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured. Workout completion will only be tracked locally.');
+        return { id: sessionId, completed: true, duration_minutes };
+      }
+
       const { data, error } = await supabase
         .from('workout_sessions')
         .update({
@@ -254,9 +269,17 @@ export function useWorkoutData() {
   // Get workout exercise ID by session and exercise name
   const getWorkoutExerciseId = async (workoutSessionId: string, exerciseName: string) => {
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured. Using local workout exercise ID.');
+        return `local-exercise-${workoutSessionId}-${exerciseName}`;
+      }
+
       const { data, error } = await supabase
         .from('workout_exercises')
-        .select('id')
+        .select(`
+          id,
+          exercises!inner (name)
+        `)
         .eq('workout_session_id', workoutSessionId)
         .eq('exercises.name', exerciseName)
         .single();

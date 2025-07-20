@@ -18,6 +18,8 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
   const [workoutSummary, setWorkoutSummary] = useState<string>('');
   const [showSummary, setShowSummary] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const { createWorkoutSession, completeWorkoutSession } = useWorkoutData();
   const [currentWorkoutSessionId, setCurrentWorkoutSessionId] = useState<string | null>(null);
 
@@ -73,8 +75,10 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
         
         const session = await createWorkoutSession(sessionData);
         setCurrentWorkoutSessionId(session.id);
+        console.log('Workout session created:', session.id);
       } catch (error) {
         console.error('Failed to create workout session:', error);
+        setError('Failed to start workout session. Continuing with local tracking.');
         // Continue with local tracking even if database fails
       }
     }
@@ -118,9 +122,11 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
     if (currentWorkoutSessionId && startTime) {
       try {
         const durationMinutes = Math.floor(elapsedTime / 60);
-        await completeWorkoutSession(currentWorkoutSessionId, durationMinutes);
+        const completedSession = await completeWorkoutSession(currentWorkoutSessionId, durationMinutes);
+        console.log('Workout completed and saved:', completedSession);
       } catch (error) {
         console.error('Failed to complete workout session:', error);
+        setError('Failed to save workout completion. Data tracked locally.');
       }
     }
   };

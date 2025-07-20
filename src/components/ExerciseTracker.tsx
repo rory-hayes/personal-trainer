@@ -158,17 +158,20 @@ export function ExerciseTracker({
     // Save to database if we have the workout exercise ID
     if (workoutExerciseId && currentSet.weight > 0 && currentSet.reps > 0) {
       try {
-        await saveExerciseSet({
+        const savedSet = await saveExerciseSet({
           workout_exercise_id: workoutExerciseId,
           set_number: setIndex + 1,
           weight_kg: currentSet.weight,
           reps: currentSet.reps,
           completed: true,
         });
+        console.log('Set saved to database:', savedSet);
       } catch (error) {
         console.error('Failed to save exercise set:', error);
         // Continue with local tracking even if database fails
       }
+    } else {
+      console.log('Set tracked locally only - missing database connection or workout exercise ID');
     }
     
     setSets(prev => prev.map((set, index) => 
