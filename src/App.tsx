@@ -5,10 +5,12 @@ import { ProgressCharts } from './components/ProgressCharts';
 import { Navigation } from './components/Navigation';
 import { workoutProgram, recoveryDay } from './data/workoutProgram';
 import { Dumbbell } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
 
 function App() {
   const [currentView, setCurrentView] = useState('schedule');
   const [selectedWorkoutDay, setSelectedWorkoutDay] = useState<number | null>(null);
+  useAuth();
 
   const handleSelectDay = (dayIndex: number) => {
     setSelectedWorkoutDay(dayIndex);

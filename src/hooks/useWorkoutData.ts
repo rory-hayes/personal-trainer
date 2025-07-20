@@ -238,6 +238,52 @@ export function useWorkoutData() {
     }
   };
 
+  // Get last completed set for a specific exercise
+  const getLastExerciseStats = async (exerciseName: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (!supabase) {
+        console.warn('Supabase not configured. Cannot fetch last exercise stats.');
+        return null;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('exercise_sets')
+        .select(`
+          weight_kg,
+          reps,
+          created_at,
+          workout_exercises!inner (
+            exercises!inner (name),
+            workout_sessions!inner (user_id)
+          )
+        `)
+        .eq('workout_exercises.exercises.name', exerciseName)
+        .eq('workout_exercises.workout_sessions.user_id', user.id)
+        .eq('completed', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        return { weight: data[0].weight_kg as number, reps: data[0].reps as number };
+      }
+
+      return null;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Get personal records
   const getPersonalRecords = async () => {
     setLoading(true);
@@ -300,6 +346,7 @@ export function useWorkoutData() {
     completeWorkoutSession,
     getWorkoutHistory,
     getExerciseProgress,
+    getLastExerciseStats,
     getPersonalRecords,
     getWorkoutExerciseId,
   };
