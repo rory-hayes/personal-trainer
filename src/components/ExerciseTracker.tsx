@@ -20,7 +20,7 @@ export function ExerciseTracker({
   workoutDay,
   workoutSessionId
 }: ExerciseTrackerProps) {
-  const { saveExerciseSet, getWorkoutExerciseId } = useWorkoutData();
+  const { saveExerciseSet, getWorkoutExerciseId, getLastExerciseStats } = useWorkoutData();
 
   // All hooks must be called before any conditional logic
   const [sets, setSets] = useState<WorkoutSet[]>([]);
@@ -28,6 +28,7 @@ export function ExerciseTracker({
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [lastWeight, setLastWeight] = useState(0);
+  const [lastReps, setLastReps] = useState(0);
   const [showAISuggestion, setShowAISuggestion] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<string>('');
   const [workoutExerciseId, setWorkoutExerciseId] = useState<string | null>(null);
@@ -59,9 +60,27 @@ export function ExerciseTracker({
         }
       }
     };
-    
+
     fetchWorkoutExerciseId();
   }, [workoutSessionId, exercise.name, exercise.subExercises]);
+
+  // Fetch last exercise stats
+  useEffect(() => {
+    const fetchLastStats = async () => {
+      if (exercise.subExercises && exercise.subExercises.length > 0) return;
+      try {
+        const stats = await getLastExerciseStats(exercise.name);
+        if (stats) {
+          setLastWeight(stats.weight);
+          setLastReps(stats.reps);
+        }
+      } catch (error) {
+        console.error('Failed to fetch last exercise stats:', error);
+      }
+    };
+
+    fetchLastStats();
+  }, [exercise.name, exercise.subExercises]);
 
   // Generate AI suggestions based on performance
   useEffect(() => {
@@ -267,6 +286,11 @@ export function ExerciseTracker({
                 </span>
               ))}
             </div>
+            {(lastWeight > 0 || lastReps > 0) && (
+              <div className="text-sm text-gray-500 mt-2">
+                Last: {lastWeight}kg × {lastReps} reps
+              </div>
+            )}
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-600 font-medium">Target</div>
