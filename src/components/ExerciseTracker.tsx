@@ -17,7 +17,7 @@ export function ExerciseTracker({
   exerciseIndex,
   onComplete,
   isCompleted,
-  workoutDay
+  workoutDay,
   workoutSessionId
 }: ExerciseTrackerProps) {
   const { saveExerciseSet, getWorkoutExerciseId } = useWorkoutData();
