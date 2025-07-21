@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Minus, Check, RotateCcw, Timer, TrendingUp, Bot, Zap, Target } from 'lucide-react';
 import { Exercise, WorkoutSet } from '../types/workout';
 import { useWorkoutData } from '../hooks/useWorkoutData';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface ExerciseTrackerProps {
   exercise: Exercise;
@@ -23,7 +24,10 @@ export function ExerciseTracker({
   const { saveExerciseSet, getWorkoutExerciseId, getLastExerciseStats } = useWorkoutData();
 
   // All hooks must be called before any conditional logic
-  const [sets, setSets] = useState<WorkoutSet[]>([]);
+  const [sets, setSets] = useLocalStorage<WorkoutSet[]>(
+    `workout-progress-${workoutDay}-${exercise.id}`,
+    []
+  );
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
@@ -36,17 +40,22 @@ export function ExerciseTracker({
   // Initialize sets when exercise changes
   useEffect(() => {
     if (!exercise.subExercises || exercise.subExercises.length === 0) {
-      const initialSets: WorkoutSet[] = Array.from({ length: exercise.sets }, (_, i) => ({
-        id: `${exercise.id}-set-${i + 1}`,
-        exercise_id: exercise.id,
-        weight: lastWeight,
-        reps: 0,
-        completed: false
-      }));
-      setSets(initialSets);
-      setCurrentSetIndex(0);
+      if (sets.length === 0) {
+        const initialSets: WorkoutSet[] = Array.from({ length: exercise.sets }, (_, i) => ({
+          id: `${exercise.id}-set-${i + 1}`,
+          exercise_id: exercise.id,
+          weight: lastWeight,
+          reps: 0,
+          completed: false
+        }));
+        setSets(initialSets);
+        setCurrentSetIndex(0);
+      } else {
+        const nextIndex = sets.findIndex(s => !s.completed);
+        setCurrentSetIndex(nextIndex === -1 ? sets.length - 1 : nextIndex);
+      }
     }
-  }, [exercise.id, exercise.sets, lastWeight, exercise.subExercises]);
+  }, [exercise.id, exercise.sets, lastWeight, exercise.subExercises, sets.length]);
 
   // Get workout exercise ID when component mounts
   useEffect(() => {

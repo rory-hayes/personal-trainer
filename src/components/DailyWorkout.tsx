@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Pause, RotateCcw, Target, Trophy, Bot, TrendingUp, Zap
 import { WorkoutDay } from '../types/workout';
 import { ExerciseTracker } from './ExerciseTracker';
 import { useWorkoutData } from '../hooks/useWorkoutData';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface DailyWorkoutProps {
   workout: WorkoutDay;
@@ -10,18 +11,21 @@ interface DailyWorkoutProps {
 }
 
 export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [startTime, setStartTime] = useState<Date | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useLocalStorage<number>(`currentExerciseIndex-${workout.day}`, 0);
+  const [startTimeStr, setStartTimeStr] = useLocalStorage<string | null>(`startTime-${workout.day}`, null);
+  const startTime = startTimeStr ? new Date(startTimeStr) : null;
+  const setStartTime = (date: Date | null) => setStartTimeStr(date ? date.toISOString() : null);
+  const [elapsedTime, setElapsedTime] = useLocalStorage<number>(`elapsedTime-${workout.day}`, 0);
+  const [isActive, setIsActive] = useLocalStorage<boolean>(`isActive-${workout.day}`, false);
+  const [completedExercisesArray, setCompletedExercisesArray] = useLocalStorage<number[]>(`completedExercises-${workout.day}`, []);
+  const completedExercises = new Set<number>(completedExercisesArray);
   const [workoutSummary, setWorkoutSummary] = useState<string>('');
   const [showSummary, setShowSummary] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
   const { createWorkoutSession, completeWorkoutSession } = useWorkoutData();
-  const [currentWorkoutSessionId, setCurrentWorkoutSessionId] = useState<string | null>(null);
+  const [currentWorkoutSessionId, setCurrentWorkoutSessionId] = useLocalStorage<string | null>(`workoutSessionId-${workout.day}`, null);
 
   useEffect(() => {
     let interval: number | null = null;
@@ -94,8 +98,12 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
     setStartTime(null);
     setElapsedTime(0);
     setCurrentExerciseIndex(0);
-    setCompletedExercises(new Set());
+    setCompletedExercisesArray([]);
     setCurrentWorkoutSessionId(null);
+
+    workout.exercises.forEach(ex => {
+      localStorage.removeItem(`workout-progress-${workout.day}-${ex.id}`);
+    });
   };
 
   const formatTime = (seconds: number) => {
@@ -105,7 +113,9 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
   };
 
   const handleExerciseComplete = (exerciseIndex: number) => {
-    setCompletedExercises(prev => new Set([...prev, exerciseIndex]));
+    if (!completedExercises.has(exerciseIndex)) {
+      setCompletedExercisesArray([...completedExercisesArray, exerciseIndex]);
+    }
     
     // If all exercises are completed, save workout to database
     if (exerciseIndex === workout.exercises.length - 1) {
@@ -129,6 +139,17 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
         setError('Failed to save workout completion. Data tracked locally.');
       }
     }
+
+    // Clear stored progress after completion
+    setIsActive(false);
+    setStartTime(null);
+    setElapsedTime(0);
+    setCurrentExerciseIndex(0);
+    setCompletedExercisesArray([]);
+    setCurrentWorkoutSessionId(null);
+    workout.exercises.forEach(ex => {
+      localStorage.removeItem(`workout-progress-${workout.day}-${ex.id}`);
+    });
   };
 
   const progressPercentage = (completedExercises.size / workout.exercises.length) * 100;
@@ -243,6 +264,7 @@ export function DailyWorkout({ workout, onBack }: DailyWorkoutProps) {
       <div className="flex-1">
         {workout.exercises[currentExerciseIndex] && (
           <ExerciseTracker
+            key={workout.exercises[currentExerciseIndex].id}
             exercise={workout.exercises[currentExerciseIndex]}
             exerciseIndex={currentExerciseIndex}
             onComplete={handleExerciseComplete}
